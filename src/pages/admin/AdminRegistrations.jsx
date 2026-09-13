@@ -148,7 +148,7 @@ export default function AdminRegistrations() {
           disabled={filteredRegistrations.length === 0}
         >
           <IconDownload size={16} />
-          <span>Export CSV</span>
+          <span>Export</span>
         </button>
       </div>
 

@@ -17,15 +17,17 @@ export const DEFAULT_WEBINAR = {
 };
 
 /**
- * Get initial webinar content with cached date if available to avoid initial flash.
+ * Get initial webinar content with cached date and time if available to avoid initial flash.
  */
 export function getInitialWebinar() {
   try {
     const cachedDate = localStorage.getItem('webinar_target_date');
-    if (cachedDate) {
+    const cachedTime = localStorage.getItem('webinar_target_time');
+    if (cachedDate || cachedTime) {
       return {
         ...DEFAULT_WEBINAR,
-        date: cachedDate
+        ...(cachedDate ? { date: cachedDate } : {}),
+        ...(cachedTime ? { time: cachedTime } : {})
       };
     }
   } catch {
@@ -56,10 +58,13 @@ export async function getWebinarBySlug(slug = 'grow-through-industry-2026') {
       return { data: getInitialWebinar(), error: new Error('Webinar not found'), isFallback: true };
     }
 
-    // Save date in local cache for instant initial rendering on future reloads
+    // Save date and time in local cache for instant initial rendering on future reloads
     try {
       if (data.date) {
         localStorage.setItem('webinar_target_date', data.date);
+      }
+      if (data.time) {
+        localStorage.setItem('webinar_target_time', data.time);
       }
     } catch {
       // ignore
@@ -81,32 +86,50 @@ export async function getWebinarBySlug(slug = 'grow-through-industry-2026') {
 }
 
 /**
- * Update webinar date in Supabase (Admin operation).
+ * Update webinar date & time in Supabase (Admin operation).
  */
-export async function updateWebinarDate(webinarId, newDate) {
+export async function updateWebinarSchedule(webinarId, newDate, newTime) {
   try {
-    const cleanDate = newDate.trim();
+    const cleanDate = typeof newDate === 'string' ? newDate.trim() : '';
+    const cleanTime = typeof newTime === 'string' ? newTime.trim() : '';
+    
+    const updatePayload = {};
+    if (cleanDate) updatePayload.date = cleanDate;
+    if (cleanTime) updatePayload.time = cleanTime;
+
+    if (Object.keys(updatePayload).length === 0) {
+      return { success: false, error: 'No schedule fields specified to update.' };
+    }
+
     const { data, error } = await supabase
       .from('webinars')
-      .update({ date: cleanDate })
+      .update(updatePayload)
       .eq('id', webinarId)
       .select()
       .single();
 
     if (error) {
-      console.error('[webinarService] Failed to update webinar date:', error);
+      console.error('[webinarService] Failed to update webinar schedule:', error);
       return { success: false, error: error.message };
     }
 
     try {
-      localStorage.setItem('webinar_target_date', cleanDate);
+      if (cleanDate) localStorage.setItem('webinar_target_date', cleanDate);
+      if (cleanTime) localStorage.setItem('webinar_target_time', cleanTime);
     } catch {
       // ignore
     }
 
     return { success: true, data };
   } catch (err) {
-    return { success: false, error: err.message || 'Failed to update date.' };
+    return { success: false, error: err.message || 'Failed to update schedule.' };
   }
+}
+
+/**
+ * Backwards compatible alias for updateWebinarSchedule
+ */
+export async function updateWebinarDate(webinarId, newDate, newTime) {
+  return updateWebinarSchedule(webinarId, newDate, newTime);
 }
 

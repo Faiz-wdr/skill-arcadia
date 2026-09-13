@@ -26,10 +26,13 @@ export default function WebinarPage() {
 
     loadWebinar();
 
-    // Cross-tab synchronization: If admin updates date in another tab, update immediately
+    // Cross-tab synchronization: If admin updates date or time in another tab, update immediately
     const handleStorage = (e) => {
       if (e.key === 'webinar_target_date' && e.newValue) {
         setWebinar((prev) => ({ ...prev, date: e.newValue }));
+      }
+      if (e.key === 'webinar_target_time' && e.newValue) {
+        setWebinar((prev) => ({ ...prev, time: e.newValue }));
       }
     };
     window.addEventListener('storage', handleStorage);
@@ -41,7 +44,7 @@ export default function WebinarPage() {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'webinars' },
         (payload) => {
-          if (payload.new && payload.new.date) {
+          if (payload.new && (payload.new.date || payload.new.time)) {
             setWebinar((prev) => ({ ...prev, ...payload.new }));
           }
         }

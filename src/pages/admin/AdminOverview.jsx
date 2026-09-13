@@ -69,7 +69,7 @@ export default function AdminOverview() {
         <div className="admin-metric-card">
           <div className="admin-metric-label">Days Remaining</div>
           <div className="admin-metric-value">
-            {loading ? '...' : calculateDaysRemaining(webinar?.date)}
+            {loading ? '...' : calculateDaysRemaining(webinar?.date, webinar?.time)}
           </div>
           <div className="admin-metric-sub">Countdown active on live page</div>
         </div>
@@ -81,7 +81,7 @@ export default function AdminOverview() {
           <div className="admin-card-title">Active Webinar Information</div>
           <Link to="/admin/settings" className="admin-btn admin-btn-secondary" style={{ height: 32, fontSize: '0.8rem' }}>
             <IconEdit size={14} />
-            <span>Edit Date</span>
+            <span>Edit Schedule</span>
           </Link>
         </div>
         <div className="admin-card-body">

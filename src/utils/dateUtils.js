@@ -147,3 +147,86 @@ export function calculateDaysRemaining(dateStr, timeStr = '7:30 PM IST') {
   if (diff <= 0) return 0;
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
+
+/**
+ * Convert any date string (e.g. 'September 23, 2026', '2026-09-23') to HTML5 date input format 'YYYY-MM-DD'.
+ */
+export function dateStringToYMD(dateStr) {
+  if (!dateStr) return '';
+  const clean = String(dateStr).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) return clean;
+
+  const mdyMatch = clean.match(/^([a-zA-Z]+)\s+(\d{1,2}),?\s+(\d{4})/);
+  if (mdyMatch && MONTH_MAP[mdyMatch[1].toLowerCase()] !== undefined) {
+    const m = String(MONTH_MAP[mdyMatch[1].toLowerCase()] + 1).padStart(2, '0');
+    const d = String(mdyMatch[2]).padStart(2, '0');
+    return `${mdyMatch[3]}-${m}-${d}`;
+  }
+
+  const dmyMatch = clean.match(/^(\d{1,2})\s+([a-zA-Z]+),?\s+(\d{4})/);
+  if (dmyMatch && MONTH_MAP[dmyMatch[2].toLowerCase()] !== undefined) {
+    const m = String(MONTH_MAP[dmyMatch[2].toLowerCase()] + 1).padStart(2, '0');
+    const d = String(dmyMatch[1]).padStart(2, '0');
+    return `${dmyMatch[3]}-${m}-${d}`;
+  }
+
+  const isoMatch = clean.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  if (isoMatch) {
+    return `${isoMatch[1]}-${String(isoMatch[2]).padStart(2, '0')}-${String(isoMatch[3]).padStart(2, '0')}`;
+  }
+
+  return '';
+}
+
+/**
+ * Convert HTML5 date input format 'YYYY-MM-DD' to friendly presentation format 'Month DD, YYYY'.
+ */
+export function ymdToFriendlyDate(ymdStr) {
+  if (!ymdStr) return '';
+  const parts = ymdStr.split('-').map(Number);
+  if (parts.length < 3 || isNaN(parts[0]) || isNaN(parts[1]) || isNaN(parts[2])) {
+    return ymdStr;
+  }
+  const [y, m, d] = parts;
+  const MONTHS = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  const monthName = MONTHS[m - 1] || 'January';
+  return `${monthName} ${d}, ${y}`;
+}
+
+/**
+ * Convert any time string (e.g. '7:30 PM IST', '19:30', '7:30 PM') to HTML5 time input format 'HH:mm' (24-hr).
+ */
+export function timeStringToHHMM(timeStr) {
+  if (!timeStr) return '19:30';
+  const clean = String(timeStr).trim();
+  if (/^\d{2}:\d{2}$/.test(clean)) return clean;
+
+  const match = clean.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm)?/i);
+  if (match) {
+    let h = parseInt(match[1], 10);
+    const m = match[2];
+    const meridian = match[3] ? match[3].toLowerCase() : null;
+    if (meridian === 'pm' && h < 12) h += 12;
+    if (meridian === 'am' && h === 12) h = 0;
+    return `${String(h).padStart(2, '0')}:${m}`;
+  }
+  return '19:30';
+}
+
+/**
+ * Convert HTML5 time input format 'HH:mm' (24-hr) to friendly presentation format 'H:MM AM/PM IST'.
+ */
+export function hhmmToFriendlyTime(hhmmStr) {
+  if (!hhmmStr) return '7:30 PM IST';
+  const parts = hhmmStr.split(':');
+  if (parts.length < 2) return hhmmStr;
+  let h = parseInt(parts[0], 10);
+  const m = parts[1];
+  const meridian = h >= 12 ? 'PM' : 'AM';
+  let displayHour = h % 12;
+  if (displayHour === 0) displayHour = 12;
+  return `${displayHour}:${m} ${meridian} IST`;
+}
