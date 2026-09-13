@@ -1,0 +1,27 @@
+{
+  "name": "webinar-landing-page",
+  "version": "1.0.0",
+  "description": "> **Event:** Future of Finance & Career Masterclass   > **Date:** September 30, 2026 | 6:00 PM IST   > **Topic:** *YOUR NEXT CAREER MOVE STARTS HERE. Discover the future of finance, industry skills, and exciting career opportunities.*   > **Partnership:** Skill Arcadia × Grant Thornton   > **Theme:** Deep Sapphire / Navy Blue (`#050B18`, `#0A142F`) with Electric Cyan (`#38BDF8`) & Grant Thornton Signature Purple (`#782299`, `#9D3FC2`)",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "pg": "^8.23.0",
+    "vite": "^5.4.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
