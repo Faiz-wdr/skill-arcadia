@@ -33,8 +33,9 @@ export default function Header() {
           <img src={grantThorntonLogo} alt="Grant Thornton" />
         </div>
 
-        <Link to="/admin/login" className="header-cta">
-          <span>Admin Login</span>
+        <Link to="/admin/login" className="header-cta" aria-label="Admin Login">
+          <span className="cta-text-full">Admin Login</span>
+          <span className="cta-text-short">Admin</span>
           <i className="fa-solid fa-arrow-right icon-arrow"></i>
         </Link>
       </div>

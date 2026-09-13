@@ -26,6 +26,9 @@ html {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 body {
@@ -34,6 +37,8 @@ body {
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
   background-color: var(--bg-main);
 }
 
@@ -48,6 +53,7 @@ a { text-decoration: none; color: inherit; }
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
+  max-width: 100%;
 }
 
 .bg-grid {
@@ -160,6 +166,8 @@ a { text-decoration: none; color: inherit; }
   align-items: center;
   justify-content: space-between;
   height: 100%;
+  width: 100%;
+  gap: 16px;
 }
 
 .brand-lockup {
@@ -167,12 +175,15 @@ a { text-decoration: none; color: inherit; }
   align-items: center;
   gap: 20px;
   transition: opacity 200ms ease;
+  flex-shrink: 1;
+  min-width: 0;
 }
 .brand-lockup:hover { opacity: 0.85; }
 
 .brand-lockup img {
   height: 52px;
   width: auto;
+  max-width: 100%;
   object-fit: contain;
 }
 
@@ -181,6 +192,8 @@ a { text-decoration: none; color: inherit; }
   font-size: 1.25rem;
   font-weight: 300;
   opacity: 0.5;
+  flex-shrink: 0;
+  user-select: none;
 }
 
 .header-cta {
@@ -190,11 +203,21 @@ a { text-decoration: none; color: inherit; }
   background: var(--text-primary);
   padding: 10px 22px;
   border-radius: 99px;
-  transition: transform 200ms var(--easing-smooth), box-shadow 200ms var(--easing-smooth);
-  display: flex;
+  transition: transform 200ms var(--easing-smooth), box-shadow 200ms var(--easing-smooth), background 200ms ease;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.header-cta .cta-text-short {
+  display: none;
+}
+
+.header-cta .cta-text-full {
+  display: inline;
 }
 
 .header-cta .icon-arrow {
@@ -205,6 +228,7 @@ a { text-decoration: none; color: inherit; }
 .header-cta:hover {
   transform: scale(1.02);
   box-shadow: 0 4px 14px rgba(17,24,39,0.15);
+  background: #000000;
 }
 
 .header-cta:hover .icon-arrow {
@@ -318,13 +342,16 @@ a { text-decoration: none; color: inherit; }
 
 .headline-glow-field {
   position: absolute;
-  top: 50%; left: 30%;
-  transform: translate(-50%, -50%);
-  width: 400px; height: 180px;
+  top: 60px;
+  left: 0;
+  width: 100%;
+  max-width: 380px;
+  height: 180px;
   background: radial-gradient(ellipse, rgba(22, 136, 255, 0.25) 0%, rgba(109, 40, 217, 0.25) 50%, transparent 80%);
   filter: blur(40px);
   z-index: -1;
   animation: colorShift 8s infinite alternate ease-in-out;
+  pointer-events: none;
 }
 
 @keyframes colorShift {
@@ -433,12 +460,13 @@ a { text-decoration: none; color: inherit; }
 
 .cd-glow {
   position: absolute;
-  inset: -20px;
+  inset: 0;
   background: var(--accent-purple);
-  filter: blur(40px);
+  filter: blur(30px);
   opacity: 0.05;
   z-index: -1;
   border-radius: 50%;
+  pointer-events: none;
 }
 
 @keyframes cdSlideUpOut {
@@ -738,7 +766,7 @@ select.input-field {
 /* ==========================================================================
    PAGE LOAD ANIMATION SYSTEM
    ========================================================================== */
-.site-header { transform: translateY(-100%); opacity: 0; }
+.site-header { transform: translateY(0); opacity: 1; }
 .anim-reveal { opacity: 0; transform: translateY(20px); will-change: opacity, transform; }
 .anim-scale { opacity: 0; transform: scale(0.96); will-change: opacity, transform; }
 .anim-form { opacity: 0; transform: translateY(30px) scale(0.98); will-change: opacity, transform; }
@@ -810,11 +838,47 @@ body.is-loaded .anim-form {
 
 /* Mobile (< 768px): Single Column Full Width Form */
 @media (max-width: 768px) {
-  .container { padding: 0 16px; }
+  .container { 
+    padding: 0 16px;
+    width: 100%;
+    max-width: 100%;
+  }
   
-  .brand-lockup { gap: 10px; }
-  .brand-lockup img { height: 32px; }
-  .header-cta { padding: 8px 14px; font-size: 0.8125rem; }
+  .site-header { 
+    height: 64px; 
+    transform: translateY(0) !important; 
+    opacity: 1 !important;
+  }
+  .header-inner {
+    gap: 12px;
+    width: 100%;
+  }
+  
+  .brand-lockup { 
+    gap: 8px;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .brand-lockup img { 
+    height: 26px; 
+    max-width: 90px;
+    object-fit: contain;
+  }
+  .brand-divider {
+    font-size: 0.95rem;
+    margin: 0 2px;
+  }
+  
+  .header-cta { 
+    padding: 7px 14px; 
+    font-size: 0.75rem; 
+    gap: 6px;
+    flex-shrink: 0;
+    min-height: 38px;
+  }
+  .header-cta .icon-arrow { 
+    font-size: 0.6875rem; 
+  }
   
   .hero-section { padding: 84px 0 40px 0; }
   .hero-content { gap: 20px; }
@@ -832,6 +896,7 @@ body.is-loaded .anim-form {
   .ecafa-badge {
     padding: 12px 16px;
     border-radius: 12px;
+    max-width: 100%;
   }
   .ecafa-title { font-size: 0.9375rem; }
   .ecafa-desc { font-size: 0.75rem; line-height: 1.4; }
@@ -853,6 +918,7 @@ body.is-loaded .anim-form {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
   }
   .info-label {
     font-size: 0.6875rem;
@@ -862,10 +928,11 @@ body.is-loaded .anim-form {
     font-weight: 600;
   }
   .info-val {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.3;
+    word-break: break-word;
   }
   
   /* Compact 4-Unit Glass Countdown */
@@ -875,13 +942,14 @@ body.is-loaded .anim-form {
     gap: 6px;
     width: 100%;
     max-width: 100%;
-    padding: 16px 10px;
+    padding: 14px 8px;
     background: rgba(255, 255, 255, 0.65);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-subtle);
     border-radius: 16px;
     margin-top: 8px;
+    overflow: hidden;
   }
   .cd-unit {
     min-width: unset;
@@ -889,7 +957,7 @@ body.is-loaded .anim-form {
     align-items: center;
   }
   .cd-num-wrap {
-    font-size: clamp(1.65rem, 6vw, 2.25rem);
+    font-size: clamp(1.5rem, 5.5vw, 2rem);
   }
   .cd-lbl {
     font-size: 0.625rem;
@@ -901,6 +969,9 @@ body.is-loaded .anim-form {
     right: -3px;
     height: 50%;
     top: 25%;
+  }
+  .countdown-minimal > .cd-unit:nth-of-type(4)::after {
+    display: none !important;
   }
   
   /* Form takes full width with zoom-prevention inputs */
@@ -921,22 +992,61 @@ body.is-loaded .anim-form {
 
 /* Small Mobile (< 480px) */
 @media (max-width: 480px) {
-  .brand-lockup img { height: 28px; }
-  .brand-divider { font-size: 0.875rem; margin: 0 2px; }
+  .container { padding: 0 12px; }
+  .site-header { height: 60px; }
+  .header-inner { gap: 8px; }
   
-  .header-cta { padding: 6px 12px; font-size: 0.75rem; }
-  .header-cta .icon-arrow { font-size: 0.6875rem; }
+  .brand-lockup { gap: 6px; }
+  .brand-lockup img { height: 24px; max-width: 80px; }
+  .brand-divider { font-size: 0.875rem; margin: 0 1px; }
+  
+  .header-cta { 
+    padding: 6px 12px; 
+    font-size: 0.725rem; 
+    gap: 5px;
+    min-height: 34px;
+  }
+  .header-cta .icon-arrow { font-size: 0.625rem; }
   
   .hero-title { font-size: clamp(1.85rem, 8vw, 2.35rem); }
   
   .countdown-minimal {
-    padding: 14px 6px;
+    padding: 12px 6px;
+    gap: 4px;
   }
-  .cd-num-wrap { font-size: 1.6rem; }
+  .cd-num-wrap { font-size: 1.5rem; }
   .cd-lbl { font-size: 0.58rem; }
   
   .premium-form-card { padding: 24px 16px; }
   .form-title { font-size: 1.35rem; }
+}
+
+/* Ultra-compact Mobile (< 380px, e.g. iPhone SE, 360px Android) */
+@media (max-width: 380px) {
+  .container { padding: 0 10px; }
+  .site-header { height: 56px; }
+  
+  .brand-lockup { gap: 5px; }
+  .brand-lockup img { height: 21px; max-width: 68px; }
+  .brand-divider { font-size: 0.75rem; margin: 0; }
+  
+  /* On compact screens <= 380px, cleanly switch to "Admin" + arrow so the button fits with generous space */
+  .header-cta { 
+    padding: 5px 10px; 
+    font-size: 0.6875rem; 
+    gap: 4px;
+    min-height: 32px;
+  }
+  .header-cta .cta-text-full { display: none; }
+  .header-cta .cta-text-short { display: inline; }
+  
+  .info-row { padding: 12px; gap: 8px; }
+  .info-val { font-size: 0.8125rem; }
+  
+  .cd-num-wrap { font-size: 1.35rem; }
+  .cd-lbl { font-size: 0.52rem; }
+  
+  .premium-form-card { padding: 20px 14px; }
 }
 
 /* ==========================================================================
