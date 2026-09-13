@@ -70,12 +70,6 @@ export default function RegistrationModal({ registration, onClose }) {
             <span className="admin-detail-label">Registered At</span>
             <span className="admin-detail-val">{formatDate(registration.created_at)}</span>
           </div>
-
-          <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
-            <button type="button" className="admin-btn admin-btn-secondary" onClick={onClose}>
-              Close
-            </button>
-          </div>
         </div>
       </div>
     </div>
