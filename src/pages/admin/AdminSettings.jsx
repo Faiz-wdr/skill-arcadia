@@ -15,13 +15,6 @@ import {
   calculateDaysRemaining
 } from '../../utils/dateUtils';
 
-const TIME_PRESETS = [
-  { label: '10:00 AM', value: '10:00' },
-  { label: '02:00 PM', value: '14:00' },
-  { label: '06:00 PM', value: '18:00' },
-  { label: '07:30 PM', value: '19:30' },
-  { label: '08:00 PM', value: '20:00' }
-];
 
 export default function AdminSettings() {
   const [webinar, setWebinar] = useState(null);
@@ -109,17 +102,6 @@ export default function AdminSettings() {
     setSuccessMsg('Webinar date & time updated successfully! Changes are now live on the public landing page.');
   };
 
-  // Quick Date Shortcut Helpers
-  const addDaysToSelected = (days) => {
-    const base = selectedDate ? new Date(`${selectedDate}T00:00:00`) : new Date();
-    base.setDate(base.getDate() + days);
-    const y = base.getFullYear();
-    const m = String(base.getMonth() + 1).padStart(2, '0');
-    const d = String(base.getDate()).padStart(2, '0');
-    setSelectedDate(`${y}-${m}-${d}`);
-    setSuccessMsg('');
-    setErrorMsg('');
-  };
 
   return (
     <div>
@@ -149,10 +131,6 @@ export default function AdminSettings() {
         </div>
 
         <div className="admin-card-body">
-          <p style={{ fontSize: '0.875rem', color: 'var(--admin-text-secondary)', marginBottom: 20 }}>
-            Select the upcoming webinar date and time using the pickers below. Updating will immediately synchronize
-            the public countdown timer, hero info badges, and attendee schedule.
-          </p>
 
           <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <div className="admin-schedule-grid">
@@ -186,40 +164,7 @@ export default function AdminSettings() {
                   disabled={loading || saving}
                   required
                 />
-                <div style={{ marginTop: 6, fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>
-                  Selected: <strong style={{ color: 'var(--admin-text-primary)' }}>{friendlyDate || 'None'}</strong>
-                </div>
 
-                {/* Quick Date Presets */}
-                <div className="admin-preset-chips">
-                  <button
-                    type="button"
-                    className="admin-preset-chip"
-                    onClick={() => addDaysToSelected(1)}
-                    disabled={loading || saving}
-                    title="Add 1 day"
-                  >
-                    +1 Day
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-preset-chip"
-                    onClick={() => addDaysToSelected(7)}
-                    disabled={loading || saving}
-                    title="Add 1 week"
-                  >
-                    +1 Week
-                  </button>
-                  <button
-                    type="button"
-                    className="admin-preset-chip"
-                    onClick={() => addDaysToSelected(14)}
-                    disabled={loading || saving}
-                    title="Add 2 weeks"
-                  >
-                    +2 Weeks
-                  </button>
-                </div>
               </div>
 
               {/* Time Choosing */}
@@ -252,28 +197,7 @@ export default function AdminSettings() {
                   disabled={loading || saving}
                   required
                 />
-                <div style={{ marginTop: 6, fontSize: '0.75rem', color: 'var(--admin-text-muted)' }}>
-                  Selected: <strong style={{ color: 'var(--admin-text-primary)' }}>{friendlyTime || 'None'}</strong>
-                </div>
 
-                {/* Quick Time Presets */}
-                <div className="admin-preset-chips">
-                  {TIME_PRESETS.map((preset) => (
-                    <button
-                      key={preset.value}
-                      type="button"
-                      className={`admin-preset-chip ${selectedTime === preset.value ? 'active' : ''}`}
-                      onClick={() => {
-                        setSelectedTime(preset.value);
-                        setSuccessMsg('');
-                        setErrorMsg('');
-                      }}
-                      disabled={loading || saving}
-                    >
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
               </div>
             </div>
 
@@ -283,9 +207,6 @@ export default function AdminSettings() {
                 <div className="admin-preview-badge">
                   <span className="admin-preview-dot"></span>
                   <span>Public Website Live Preview</span>
-                </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--admin-text-secondary)' }}>
-                  Auto-syncs via Supabase Realtime
                 </div>
               </div>
               <div className="admin-preview-details">
