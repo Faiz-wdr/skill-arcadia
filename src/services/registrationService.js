@@ -151,3 +151,32 @@ export async function getRegistrationCount(webinarId) {
   }
 }
 
+/**
+ * Delete one or multiple registrations by ID (Admin operation).
+ * @param {string|string[]} ids - Single UUID or array of UUIDs
+ */
+export async function deleteRegistrations(ids) {
+  const idList = Array.isArray(ids) ? ids.filter(Boolean) : [ids].filter(Boolean);
+
+  if (!idList.length) {
+    return { success: false, error: 'No registration IDs provided for deletion.' };
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('registrations')
+      .delete()
+      .in('id', idList);
+
+    if (error) {
+      console.error('[registrationService] Failed to delete registrations:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, count: idList.length, data };
+  } catch (err) {
+    console.error('[registrationService] Unexpected delete error:', err);
+    return { success: false, error: err.message || 'An unexpected error occurred.' };
+  }
+}
+

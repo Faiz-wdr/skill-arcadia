@@ -374,11 +374,22 @@
 
 .admin-table tbody tr {
   transition: background 120ms ease;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .admin-table tbody tr:hover {
   background-color: #F9FAFB;
   cursor: pointer;
+}
+
+.admin-table tbody tr.selected {
+  background-color: rgba(22, 136, 255, 0.05);
+}
+
+.admin-table tbody tr.selected:hover {
+  background-color: rgba(22, 136, 255, 0.08);
 }
 
 .admin-badge {
@@ -399,6 +410,150 @@
 .admin-badge.professional {
   background: rgba(109, 40, 217, 0.1);
   color: #6D28D9;
+}
+
+/* Checkbox */
+.admin-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--admin-border);
+  cursor: pointer;
+  accent-color: var(--admin-accent-blue);
+  vertical-align: middle;
+}
+
+.admin-table th.th-actions,
+.admin-table td.td-actions {
+  width: 52px;
+  text-align: center;
+  padding-left: 8px;
+  padding-right: 14px;
+}
+
+/* Action button (row delete) */
+.admin-action-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--admin-radius-sm);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-text-muted);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.admin-action-btn:hover {
+  color: var(--admin-danger);
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+/* Floating Bottom Selection Bar (WhatsApp Web Style) */
+.admin-bulk-bottom-bar {
+  position: fixed;
+  bottom: 28px;
+  left: calc(260px + (100vw - 260px) / 2);
+  transform: translateX(-50%);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: var(--admin-surface, #FFFFFF);
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 9999px;
+  padding: 6px 8px 6px 12px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
+  animation: adminSlideUpBottom 200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  min-width: 250px;
+}
+
+@keyframes adminSlideUpBottom {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.admin-bulk-bottom-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-bulk-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--admin-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+  padding: 0;
+}
+
+.admin-bulk-close-btn:hover {
+  background: rgba(17, 24, 39, 0.08);
+  color: var(--admin-text-primary);
+}
+
+.admin-bulk-count {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--admin-text-primary);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.admin-bulk-bottom-right {
+  display: flex;
+  align-items: center;
+}
+
+.admin-bulk-delete-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--admin-danger);
+  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 150ms ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  padding: 0;
+}
+
+.admin-bulk-delete-btn:hover {
+  background: #DC2626;
+  transform: scale(1.06);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.admin-bulk-delete-btn:active {
+  transform: scale(0.96);
+}
+
+@media (max-width: 992px) {
+  .admin-bulk-bottom-bar {
+    left: 50%;
+    bottom: 20px;
+    max-width: calc(100vw - 32px);
+  }
 }
 
 /* ==============================================================================
@@ -646,6 +801,41 @@
   border-color: rgba(17, 24, 39, 0.2);
 }
 
+.admin-btn-danger {
+  background: var(--admin-danger);
+  color: #FFFFFF;
+}
+
+.admin-btn-danger:hover {
+  background: #DC2626;
+  transform: translateY(-1px);
+}
+
+.admin-btn-danger-outline {
+  background: transparent;
+  color: var(--admin-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.admin-btn-danger-outline:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: var(--admin-danger);
+}
+
+.admin-btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: adminSpin 0.6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes adminSpin {
+  to { transform: rotate(360deg); }
+}
+
 .admin-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -773,6 +963,72 @@
   font-weight: 600;
   color: var(--admin-text-primary);
   text-align: right;
+}
+
+.admin-modal-footer {
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--admin-border);
+  background: #FAFAFA;
+}
+
+/* Confirmation Alert Modal */
+.admin-confirm-modal {
+  max-width: 440px;
+  position: relative;
+}
+
+.admin-confirm-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.admin-confirm-body {
+  padding: 32px 24px 24px;
+  text-align: center;
+}
+
+.admin-confirm-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--admin-danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 18px;
+}
+
+.admin-confirm-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin-bottom: 10px;
+  letter-spacing: -0.01em;
+}
+
+.admin-confirm-desc {
+  font-size: 0.875rem;
+  color: var(--admin-text-secondary);
+  line-height: 1.55;
+  margin-bottom: 24px;
+}
+
+.admin-confirm-desc strong {
+  color: var(--admin-text-primary);
+  font-weight: 600;
+}
+
+.admin-confirm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.admin-confirm-actions .admin-btn {
+  flex: 1;
 }
 
 /* ==============================================================================

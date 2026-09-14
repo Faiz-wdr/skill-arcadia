@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { IconClose } from './AdminIcons';
+import { IconClose, IconTrash } from './AdminIcons';
 
-export default function RegistrationModal({ registration, onClose }) {
+export default function RegistrationModal({ registration, onClose, onDelete }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose();
@@ -71,7 +71,22 @@ export default function RegistrationModal({ registration, onClose }) {
             <span className="admin-detail-val">{formatDate(registration.created_at)}</span>
           </div>
         </div>
+
+        {onDelete && (
+          <div className="admin-modal-footer">
+            <button
+              type="button"
+              className="admin-btn admin-btn-danger-outline"
+              onClick={() => onDelete(registration)}
+              style={{ width: '100%' }}
+            >
+              <IconTrash size={16} />
+              <span>Delete Attendee</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
 }
+

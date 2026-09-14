@@ -1,7 +1,16 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { getRegistrations } from '../../services/registrationService';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { getRegistrations, deleteRegistrations } from '../../services/registrationService';
 import RegistrationModal from '../../components/admin/RegistrationModal';
-import { IconDownload, IconSearch, IconSort, IconEmpty } from '../../components/admin/AdminIcons';
+import DeleteConfirmModal from '../../components/admin/DeleteConfirmModal';
+import {
+  IconDownload,
+  IconSearch,
+  IconSort,
+  IconEmpty,
+  IconTrash,
+  IconCheckCircle,
+  IconClose
+} from '../../components/admin/AdminIcons';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -15,6 +24,37 @@ export default function AdminRegistrations() {
   const [sortOrder, setSortOrder] = useState('desc'); // 'asc' | 'desc'
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedReg, setSelectedReg] = useState(null);
+
+  // Multi-selection state
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  // Delete modal state
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    ids: [],
+    count: 0,
+    targetName: '',
+    targetEmail: ''
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Success / Feedback notification
+  const [toastMessage, setToastMessage] = useState(null);
+  const toastTimeoutRef = useRef(null);
+
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => {
+      setToastMessage(null);
+    }, 4000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -83,6 +123,158 @@ export default function AdminRegistrations() {
     return filteredRegistrations.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredRegistrations, currentPage]);
 
+  // Selection helpers
+  const isSelectionMode = selectedIds.length > 0;
+  const visibleIds = useMemo(
+    () => paginatedRegistrations.map((r) => r.id),
+    [paginatedRegistrations]
+  );
+
+  const isAllVisibleSelected =
+    visibleIds.length > 0 && visibleIds.every((id) => selectedIds.includes(id));
+  const isIndeterminate =
+    visibleIds.some((id) => selectedIds.includes(id)) && !isAllVisibleSelected;
+
+  const handleToggleSelectAllVisible = () => {
+    if (isAllVisibleSelected) {
+      // Unselect visible items
+      setSelectedIds((prev) => prev.filter((id) => !visibleIds.includes(id)));
+    } else {
+      // Select all visible items
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...visibleIds])));
+    }
+  };
+
+  const handleToggleSelectRow = (id, e) => {
+    if (e) e.stopPropagation();
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  // Long press detection for rows
+  const longPressTimerRef = useRef(null);
+  const isLongPressTriggeredRef = useRef(false);
+  const pointerStartPosRef = useRef({ x: 0, y: 0 });
+
+  const handlePointerDown = (regId, e) => {
+    if (e.button !== undefined && e.button !== 0) return;
+
+    isLongPressTriggeredRef.current = false;
+    pointerStartPosRef.current = { x: e.clientX, y: e.clientY };
+
+    longPressTimerRef.current = setTimeout(() => {
+      isLongPressTriggeredRef.current = true;
+      setSelectedIds((prev) =>
+        prev.includes(regId) ? prev : [...prev, regId]
+      );
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        try {
+          navigator.vibrate(40);
+        } catch {}
+      }
+    }, 450);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!longPressTimerRef.current) return;
+    const deltaX = Math.abs(e.clientX - pointerStartPosRef.current.x);
+    const deltaY = Math.abs(e.clientY - pointerStartPosRef.current.y);
+    if (deltaX > 8 || deltaY > 8) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handlePointerUp = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handleRowClick = (reg) => {
+    if (isLongPressTriggeredRef.current) {
+      isLongPressTriggeredRef.current = false;
+      return;
+    }
+
+    if (isSelectionMode) {
+      handleToggleSelectRow(reg.id);
+    } else {
+      setSelectedReg(reg);
+    }
+  };
+
+  // Request single delete
+  const handleRequestSingleDelete = (reg, e) => {
+    if (e) e.stopPropagation();
+    setDeleteModal({
+      isOpen: true,
+      ids: [reg.id],
+      count: 1,
+      targetName: reg.name,
+      targetEmail: reg.email
+    });
+  };
+
+  // Request bulk delete
+  const handleRequestBulkDelete = () => {
+    if (selectedIds.length === 0) return;
+    setDeleteModal({
+      isOpen: true,
+      ids: [...selectedIds],
+      count: selectedIds.length,
+      targetName: '',
+      targetEmail: ''
+    });
+  };
+
+  // Perform confirmed deletion
+  const handleConfirmDelete = async () => {
+    const { ids, count } = deleteModal;
+    if (!ids || ids.length === 0) return;
+
+    setIsDeleting(true);
+    const res = await deleteRegistrations(ids);
+    setIsDeleting(false);
+
+    if (res.success) {
+      // Remove deleted records from local state
+      setRegistrations((prev) => prev.filter((r) => !ids.includes(r.id)));
+      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
+
+      // If the currently inspected attendee was deleted, close detail modal
+      if (selectedReg && ids.includes(selectedReg.id)) {
+        setSelectedReg(null);
+      }
+
+      // Close delete modal
+      setDeleteModal({
+        isOpen: false,
+        ids: [],
+        count: 0,
+        targetName: '',
+        targetEmail: ''
+      });
+
+      // Adjust page if needed
+      const remainingFilteredCount = filteredRegistrations.length - ids.length;
+      const newTotalPages = Math.max(1, Math.ceil(remainingFilteredCount / ITEMS_PER_PAGE));
+      if (currentPage > newTotalPages) {
+        setCurrentPage(newTotalPages);
+      }
+
+      showToast(
+        count > 1
+          ? `Successfully deleted ${count} registrations.`
+          : 'Registration deleted successfully.'
+      );
+    } else {
+      alert(res.error || 'Failed to delete registrations. Please try again.');
+    }
+  };
+
   const handleSort = (field) => {
     if (sortField === field) {
       setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -96,7 +288,15 @@ export default function AdminRegistrations() {
   const handleExportCSV = () => {
     if (filteredRegistrations.length === 0) return;
 
-    const headers = ['ID', 'Full Name', 'Email Address', 'WhatsApp Number', 'Course', 'Current Status', 'Registered At'];
+    const headers = [
+      'ID',
+      'Full Name',
+      'Email Address',
+      'WhatsApp Number',
+      'Course',
+      'Current Status',
+      'Registered At'
+    ];
     const rows = filteredRegistrations.map((r) => [
       r.id,
       r.name,
@@ -151,6 +351,30 @@ export default function AdminRegistrations() {
           <span>Export</span>
         </button>
       </div>
+
+      {/* Success Notification Alert */}
+      {toastMessage && (
+        <div className="admin-alert admin-alert-success" style={{ animation: 'adminModalIn 200ms ease' }}>
+          <IconCheckCircle size={18} />
+          <span style={{ flex: 1 }}>{toastMessage}</span>
+          <button
+            type="button"
+            onClick={() => setToastMessage(null)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'inherit',
+              padding: 0,
+              display: 'flex',
+              alignItems: 'center'
+            }}
+            aria-label="Dismiss alert"
+          >
+            <IconClose size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Controls Bar: Search & Filters */}
       <div className="admin-controls-bar">
@@ -232,31 +456,81 @@ export default function AdminRegistrations() {
                   <th className="sortable" onClick={() => handleSort('created_at')}>
                     Registered Date {getSortIcon('created_at')}
                   </th>
+                  <th className="th-actions" style={{ textAlign: 'center', width: 52 }} aria-label="Actions">
+                    {isSelectionMode && (
+                      <input
+                        type="checkbox"
+                        className="admin-checkbox"
+                        checked={isAllVisibleSelected}
+                        ref={(el) => {
+                          if (el) el.indeterminate = isIndeterminate;
+                        }}
+                        onChange={handleToggleSelectAllVisible}
+                        aria-label="Select all visible registrations"
+                        title="Select all"
+                      />
+                    )}
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedRegistrations.map((reg) => (
-                  <tr key={reg.id} onClick={() => setSelectedReg(reg)}>
-                    <td style={{ fontWeight: 600 }}>{reg.name}</td>
-                    <td>{reg.email}</td>
-                    <td>{reg.whatsapp}</td>
-                    <td style={{ textTransform: 'uppercase' }}>{reg.course}</td>
-                    <td>
-                      <span className={`admin-badge ${reg.status}`}>
-                        {reg.status === 'professional' ? 'Professional' : 'Student'}
-                      </span>
-                    </td>
-                    <td>
-                      {new Date(reg.created_at).toLocaleDateString('en-IN', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </td>
-                  </tr>
-                ))}
+                {paginatedRegistrations.map((reg) => {
+                  const isSelected = selectedIds.includes(reg.id);
+                  return (
+                    <tr
+                      key={reg.id}
+                      className={isSelected ? 'selected' : ''}
+                      onPointerDown={(e) => handlePointerDown(reg.id, e)}
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={handlePointerUp}
+                      onPointerCancel={handlePointerUp}
+                      onContextMenu={(e) => {
+                        if (isLongPressTriggeredRef.current) e.preventDefault();
+                      }}
+                      onClick={() => handleRowClick(reg)}
+                    >
+                      <td style={{ fontWeight: 600 }}>{reg.name}</td>
+                      <td>{reg.email}</td>
+                      <td>{reg.whatsapp}</td>
+                      <td style={{ textTransform: 'uppercase' }}>{reg.course}</td>
+                      <td>
+                        <span className={`admin-badge ${reg.status}`}>
+                          {reg.status === 'professional' ? 'Professional' : 'Student'}
+                        </span>
+                      </td>
+                      <td>
+                        {new Date(reg.created_at).toLocaleDateString('en-IN', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </td>
+                      <td className="td-actions" onClick={(e) => e.stopPropagation()}>
+                        {isSelectionMode ? (
+                          <input
+                            type="checkbox"
+                            className="admin-checkbox"
+                            checked={isSelected}
+                            onChange={(e) => handleToggleSelectRow(reg.id, e)}
+                            aria-label={`Select ${reg.name}`}
+                          />
+                        ) : (
+                          <button
+                            type="button"
+                            className="admin-action-btn"
+                            title="Delete registration"
+                            aria-label={`Delete registration for ${reg.name}`}
+                            onClick={(e) => handleRequestSingleDelete(reg, e)}
+                          >
+                            <IconTrash size={15} />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -300,10 +574,70 @@ export default function AdminRegistrations() {
         )}
       </div>
 
+      {/* Floating Bottom Selection Bar (WhatsApp Web Style) */}
+      {selectedIds.length > 0 && (
+        <div className="admin-bulk-bottom-bar" role="toolbar" aria-label="Selected registrations actions">
+          <div className="admin-bulk-bottom-left">
+            <button
+              type="button"
+              className="admin-bulk-close-btn"
+              onClick={() => setSelectedIds([])}
+              title="Cancel selection"
+              aria-label="Cancel selection"
+            >
+              <IconClose size={18} />
+            </button>
+            <span className="admin-bulk-count">
+              {selectedIds.length} selected
+            </span>
+          </div>
+
+          <div className="admin-bulk-bottom-right">
+            <button
+              type="button"
+              className="admin-bulk-delete-btn"
+              onClick={handleRequestBulkDelete}
+              title={`Delete ${selectedIds.length} selected registration${selectedIds.length > 1 ? 's' : ''}`}
+              aria-label="Delete selected registrations"
+            >
+              <IconTrash size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Attendee Details Modal */}
       {selectedReg && (
-        <RegistrationModal registration={selectedReg} onClose={() => setSelectedReg(null)} />
+        <RegistrationModal
+          registration={selectedReg}
+          onClose={() => setSelectedReg(null)}
+          onDelete={(reg) => {
+            setSelectedReg(null);
+            handleRequestSingleDelete(reg);
+          }}
+        />
       )}
+
+      {/* Delete Confirmation Alert Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        count={deleteModal.count}
+        targetName={deleteModal.targetName}
+        targetEmail={deleteModal.targetEmail}
+        loading={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeleteModal({
+              isOpen: false,
+              ids: [],
+              count: 0,
+              targetName: '',
+              targetEmail: ''
+            });
+          }
+        }}
+      />
     </div>
   );
 }
