@@ -9,7 +9,8 @@ import {
   IconEmpty,
   IconTrash,
   IconCheckCircle,
-  IconClose
+  IconClose,
+  IconAlertCircle
 } from '../../components/admin/AdminIcons';
 
 const ITEMS_PER_PAGE = 10;
@@ -42,12 +43,12 @@ export default function AdminRegistrations() {
   const [toastMessage, setToastMessage] = useState(null);
   const toastTimeoutRef = useRef(null);
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
+  const showToast = (msg, type = 'success') => {
+    setToastMessage({ text: msg, type });
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     toastTimeoutRef.current = setTimeout(() => {
       setToastMessage(null);
-    }, 4000);
+    }, 4500);
   };
 
   useEffect(() => {
@@ -240,12 +241,13 @@ export default function AdminRegistrations() {
     setIsDeleting(false);
 
     if (res.success) {
+      const actuallyDeleted = res.deletedIds || ids;
       // Remove deleted records from local state
-      setRegistrations((prev) => prev.filter((r) => !ids.includes(r.id)));
-      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
+      setRegistrations((prev) => prev.filter((r) => !actuallyDeleted.includes(r.id)));
+      setSelectedIds((prev) => prev.filter((id) => !actuallyDeleted.includes(id)));
 
       // If the currently inspected attendee was deleted, close detail modal
-      if (selectedReg && ids.includes(selectedReg.id)) {
+      if (selectedReg && actuallyDeleted.includes(selectedReg.id)) {
         setSelectedReg(null);
       }
 
@@ -259,19 +261,21 @@ export default function AdminRegistrations() {
       });
 
       // Adjust page if needed
-      const remainingFilteredCount = filteredRegistrations.length - ids.length;
+      const remainingFilteredCount = filteredRegistrations.length - actuallyDeleted.length;
       const newTotalPages = Math.max(1, Math.ceil(remainingFilteredCount / ITEMS_PER_PAGE));
       if (currentPage > newTotalPages) {
         setCurrentPage(newTotalPages);
       }
 
+      const deletedCount = res.count || actuallyDeleted.length;
       showToast(
-        count > 1
-          ? `Successfully deleted ${count} registrations.`
-          : 'Registration deleted successfully.'
+        deletedCount > 1
+          ? `Successfully deleted ${deletedCount} registrations permanently.`
+          : 'Registration permanently deleted.',
+        'success'
       );
     } else {
-      alert(res.error || 'Failed to delete registrations. Please try again.');
+      showToast(res.error || 'Failed to delete registrations. Please try again.', 'error');
     }
   };
 
@@ -352,11 +356,20 @@ export default function AdminRegistrations() {
         </button>
       </div>
 
-      {/* Success Notification Alert */}
+      {/* Feedback Notification Alert */}
       {toastMessage && (
-        <div className="admin-alert admin-alert-success" style={{ animation: 'adminModalIn 200ms ease' }}>
-          <IconCheckCircle size={18} />
-          <span style={{ flex: 1 }}>{toastMessage}</span>
+        <div
+          className={`admin-alert ${
+            toastMessage.type === 'error' ? 'admin-alert-error' : 'admin-alert-success'
+          }`}
+          style={{ animation: 'adminModalIn 200ms ease' }}
+        >
+          {toastMessage.type === 'error' ? (
+            <IconAlertCircle size={18} />
+          ) : (
+            <IconCheckCircle size={18} />
+          )}
+          <span style={{ flex: 1 }}>{toastMessage.text || toastMessage}</span>
           <button
             type="button"
             onClick={() => setToastMessage(null)}

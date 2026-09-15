@@ -153,6 +153,7 @@ export async function getRegistrationCount(webinarId) {
 
 /**
  * Delete one or multiple registrations by ID (Admin operation).
+ * Ensures permanent deletion in Supabase database and verifies affected rows.
  * @param {string|string[]} ids - Single UUID or array of UUIDs
  */
 export async function deleteRegistrations(ids) {
@@ -166,17 +167,30 @@ export async function deleteRegistrations(ids) {
     const { data, error } = await supabase
       .from('registrations')
       .delete()
-      .in('id', idList);
+      .in('id', idList)
+      .select('id');
 
     if (error) {
       console.error('[registrationService] Failed to delete registrations:', error);
       return { success: false, error: error.message };
     }
 
-    return { success: true, count: idList.length, data };
+    if (!data || data.length === 0) {
+      return {
+        success: false,
+        error: 'Failed to delete registration(s). The records could not be found or admin delete permissions were denied.'
+      };
+    }
+
+    const deletedIds = data.map((item) => item.id);
+    return {
+      success: true,
+      count: deletedIds.length,
+      deletedIds
+    };
   } catch (err) {
     console.error('[registrationService] Unexpected delete error:', err);
-    return { success: false, error: err.message || 'An unexpected error occurred.' };
+    return { success: false, error: err.message || 'An unexpected error occurred during deletion.' };
   }
 }
 

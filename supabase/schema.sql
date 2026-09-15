@@ -89,6 +89,15 @@ FOR DELETE
 TO authenticated 
 USING (true);
 
+-- Authenticated admins can update registrations
+DROP POLICY IF EXISTS "Authenticated admins can update registrations" ON public.registrations;
+CREATE POLICY "Authenticated admins can update registrations" 
+ON public.registrations 
+FOR UPDATE 
+TO authenticated 
+USING (true)
+WITH CHECK (true);
+
 -- IMPORTANT SECURITY NOTE:
 -- There is deliberately NO public SELECT, UPDATE, or DELETE policy on registrations.
 -- This strictly protects attendee personal data from public exposure.
