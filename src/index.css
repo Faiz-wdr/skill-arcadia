@@ -793,6 +793,218 @@ select.input-field {
 }
 
 /* ==========================================================================
+   REGISTRATION SUCCESS SCREEN
+   ========================================================================== */
+.success-card-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 0 4px 0;
+  animation: successFadeIn 350ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes successFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.success-tick-wrapper {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+
+.success-tick-halo {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0) 70%);
+  animation: haloPulse 2.2s ease-in-out infinite alternate;
+}
+
+@keyframes haloPulse {
+  0% { transform: scale(0.85); opacity: 0.5; }
+  100% { transform: scale(1.25); opacity: 1; }
+}
+
+.success-tick-svg {
+  width: 64px;
+  height: 64px;
+  display: block;
+  z-index: 1;
+}
+
+.success-tick-circle {
+  stroke: #10B981;
+  stroke-width: 3;
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  animation: tickStroke 0.65s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.success-tick-check {
+  stroke: #10B981;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: tickStroke 0.45s cubic-bezier(0.65, 0, 0.45, 1) 0.45s forwards;
+}
+
+@keyframes tickStroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.success-badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 4px 12px;
+  border-radius: 99px;
+  margin-bottom: 12px;
+}
+
+.success-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.success-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  max-width: 380px;
+  margin-bottom: 24px;
+}
+
+.success-actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.success-btn {
+  width: 100%;
+  height: 52px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 200ms var(--easing-smooth);
+}
+
+.success-btn i {
+  font-size: 1.1rem;
+}
+
+.success-btn-stroke-icon {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  flex-shrink: 0;
+  transition: stroke 200ms ease, transform 200ms var(--easing-smooth);
+}
+
+.success-btn-whatsapp,
+.success-btn-instagram {
+  background: var(--text-primary);
+  color: #FFFFFF;
+  border: 1px solid rgba(17, 24, 39, 0.1);
+  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.08);
+}
+
+.success-btn-whatsapp i,
+.success-btn-instagram i {
+  color: #FFFFFF;
+}
+
+.success-btn-whatsapp:hover,
+.success-btn-instagram:hover {
+  background: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.18);
+}
+
+.success-btn-ghost {
+  background: transparent;
+  border: 1.5px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.success-btn-ghost i {
+  color: var(--text-primary);
+  transition: color 200ms ease;
+}
+
+.success-btn-ghost .success-btn-stroke-icon {
+  color: var(--text-primary);
+  stroke: var(--text-primary);
+}
+
+.success-btn-ghost:hover {
+  background: rgba(22, 136, 255, 0.05);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+.success-btn-ghost:hover i {
+  color: var(--accent-blue);
+}
+
+.success-btn-ghost:hover .success-btn-stroke-icon {
+  color: var(--accent-blue);
+  stroke: var(--accent-blue);
+  transform: translateY(1px);
+}
+
+.success-reset-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 14px;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.success-reset-btn:hover {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+/* ==========================================================================
    FOOTER
    ========================================================================== */
 .site-footer {
